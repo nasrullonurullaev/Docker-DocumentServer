@@ -7,6 +7,7 @@ LABEL maintainer Ascensio System SIA <support@onlyoffice.com>
 
 ARG BASE_VERSION
 ARG PG_VERSION=16
+ARG PACKAGE_SUFFIX=t64
 
 ENV OC_RELEASE_NUM=21
 ENV OC_RU_VER=12
@@ -38,8 +39,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         cron \
         curl \
         htop \
-        libaio1t64 \
-        libasound2t64 \
+        libaio1${PACKAGE_SUFFIX} \
         libboost-regex-dev \
         libcairo2 \
         libcurl3-gnutls \
