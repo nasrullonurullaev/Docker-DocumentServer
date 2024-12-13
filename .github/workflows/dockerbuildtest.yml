@@ -8,9 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ubuntu_version: ["20.04", "22.04", "24.04"]
-        pg_version: ["12", "14", "16"]
-        package_suffix: ["", "", "t64"]
+        include:
+          - ubuntu_version: "20.04"
+            pg_version: "12"
+            package_suffix: ""
+          - ubuntu_version: "22.04"
+            pg_version: "14"
+            package_suffix: ""
+          - ubuntu_version: "24.04"
+            pg_version: "16"
+            package_suffix: "t64"
 
     steps:
       - name: Checkout code
