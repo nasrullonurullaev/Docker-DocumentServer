@@ -9,21 +9,25 @@ on:
 jobs:
   docker-build-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+          - PG_VERSION: 16
+            BASE_VERSION: 24.04
+            PACKAGE_SUFFIX: t64
+            TAG: latest
+          - PG_VERSION: 14
+            BASE_VERSION: 22.04
+            PACKAGE_SUFFIX: ""
+            TAG: test
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Build Docker Image with Ubuntu 24.04
+      - name: Build Docker Image
         run: |
-          docker build -f Dockerfile . -t my-docker-image:latest \
-            --build-arg PG_VERSION=16 \
-            --build-arg BASE_VERSION=24.04 \
-            --build-arg PACKAGE_SUFFIX=t64
-
-      - name: Build Docker Image with Ubuntu 22.04
-        run: |
-          docker build -f Dockerfile . -t my-docker-image:test \
-            --build-arg PG_VERSION=14 \
-            --build-arg BASE_VERSION=22.04 \
-            --build-arg PACKAGE_SUFFIX=            
+          docker build -f Dockerfile . -t my-docker-image:${{ matrix.build.TAG }} \
+            --build-arg PG_VERSION=${{ matrix.build.PG_VERSION }} \
+            --build-arg BASE_VERSION=${{ matrix.build.BASE_VERSION }} \
+            --build-arg PACKAGE_SUFFIX=${{ matrix.build.PACKAGE_SUFFIX }}
