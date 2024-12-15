@@ -12,14 +12,18 @@ jobs:
     strategy:
       matrix:
         build:
-          - PG_VERSION: 16
-            BASE_VERSION: 24.04
+          - BASE_VERSION: 24.04
+            PG_VERSION: 16
             PACKAGE_SUFFIX: t64
-            TAG: latest
-          - PG_VERSION: 14
-            BASE_VERSION: 22.04
+            TAG: 24
+          - BASE_VERSION: 22.04
+            PG_VERSION: 14
             PACKAGE_SUFFIX: ""
-            TAG: test
+            TAG: 22
+          - BASE_VERSION: 20.04
+            PG_VERSION: 12
+            PACKAGE_SUFFIX: ""
+            TAG: 20           
 
     steps:
       - name: Checkout Repository
@@ -27,7 +31,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -f Dockerfile . -t my-docker-image:${{ matrix.build.TAG }} \
+          docker build -f Dockerfile . -t ds:${{ matrix.build.TAG }} \
             --build-arg PG_VERSION=${{ matrix.build.PG_VERSION }} \
             --build-arg BASE_VERSION=${{ matrix.build.BASE_VERSION }} \
             --build-arg PACKAGE_SUFFIX=${{ matrix.build.PACKAGE_SUFFIX }}
