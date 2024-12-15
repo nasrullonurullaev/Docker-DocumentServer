@@ -15,15 +15,15 @@ jobs:
           - BASE_VERSION: 24.04
             PG_VERSION: 16
             PACKAGE_SUFFIX: t64
-            TAG: 24
+            TAG: 24.04
           - BASE_VERSION: 22.04
             PG_VERSION: 14
             PACKAGE_SUFFIX: ""
-            TAG: 22
+            TAG: 22.04
           - BASE_VERSION: 20.04
             PG_VERSION: 12
             PACKAGE_SUFFIX: ""
-            TAG: 20           
+            TAG: 20.04           
 
     steps:
       - name: Checkout Repository
