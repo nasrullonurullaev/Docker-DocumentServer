@@ -14,9 +14,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Build Docker Image
+      - name: Build Docker Image with Ubuntu 24.04
         run: |
           docker build -f Dockerfile . -t my-docker-image:latest \
             --build-arg PG_VERSION=16 \
             --build-arg BASE_VERSION=24.04 \
             --build-arg PACKAGE_SUFFIX=t64
+
+      - name: Build Docker Image with Ubuntu 22.04
+        run: |
+          docker build -f Dockerfile . -t my-docker-image:test \
+            --build-arg PG_VERSION=14 \
+            --build-arg BASE_VERSION=22.04 \
+            --build-arg PACKAGE_SUFFIX=            
