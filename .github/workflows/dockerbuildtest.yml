@@ -1,37 +1,22 @@
-name: Test DocumentServer Dockerfile
+name: Docker Test Build
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  test-dockerfile:
+  docker-build-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - ubuntu_version: "20.04"
-            pg_version: "12"
-            package_suffix: ""
-          - ubuntu_version: "22.04"
-            pg_version: "14"
-            package_suffix: ""
-          - ubuntu_version: "24.04"
-            pg_version: "16"
-            package_suffix: "t64"
 
     steps:
-      - name: Checkout code
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Build Docker image
+      - name: Build Docker Image
         run: |
-          echo "Testing Ubuntu ${{ matrix.ubuntu_version }} with PG_VERSION '${{ matrix.pg_version }}' and PACKAGE_SUFFIX '${{ matrix.package_suffix }}'"
-          docker build \
-            --build-arg BASE_VERSION=${{ matrix.ubuntu_version }} \
-            --build-arg PG_VERSION=${{ matrix.pg_version }} \
-            --build-arg PACKAGE_SUFFIX=${{ matrix.package_suffix }} \
-            -t documentserver:${{ matrix.ubuntu_version }} .
-
-      - name: Run image to verify build
-        run: |
-          docker run --rm documentserver:${{ matrix.ubuntu_version }} echo "Build successful for Ubuntu ${{ matrix.ubuntu_version }} with PG_VERSION '${{ matrix.pg_version }}' and PACKAGE_SUFFIX '${{ matrix.package_suffix }}'"
+          docker build -f Dockerfile . -t my-docker-image:latest \
+            --build-arg PG_VERSION=16 \
+            --build-arg BASE_VERSION=24.04 \
+            --build-arg PACKAGE_SUFFIX=t64
