@@ -32,6 +32,6 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build . -t ds:${{ matrix.build.TAG }} \
-            --build-arg BASE_VERSION=${{ matrix.build.BASE_VERSION }} \            
+            --build-arg BASE_VERSION=${{ matrix.build.BASE_VERSION }} \
             --build-arg PG_VERSION=${{ matrix.build.PG_VERSION }} \
             --build-arg PACKAGE_SUFFIX=${{ matrix.build.PACKAGE_SUFFIX }}
