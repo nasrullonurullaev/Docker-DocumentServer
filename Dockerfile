@@ -42,6 +42,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         curl \
         htop \
         libaio1${PACKAGE_SUFFIX} \
+        libasound2${PACKAGE_SUFFIX} \
         libboost-regex-dev \
         libcairo2 \
         libcurl3-gnutls \
