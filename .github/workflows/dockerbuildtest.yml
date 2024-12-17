@@ -1,22 +1,30 @@
----
-name: Trigger 4testing rebuild
+name: Test DocumentServer Dockerfile
 
-run-name: "Weekly 4testing rebuild trigger"
+on:
+  workflow_dispatch:
 
-on: 
-  schedule:
-    # Run every Saturday at 10 p.m.   
-    - cron: '00 22 * * 6'
-  
-jobs: 
-  trigger-rebuild:
-    name: "trigget-rebuild"
-    runs-on: "ubuntu-latest"
+jobs:
+  test-dockerfile:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ubuntu_version: ["20.04", "22.04", "24.04"]
+        pg_version: ["12", "14", "16"]
+        package_suffix: ["", "", "t64"]
+
     steps:
-      - name: Rebuild 4testing manualy
-        env: 
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
         run: |
-          gh workflow run rebuild.yml \
-              --repo ONLYOFFICE/Docker-DocumentServer \
-              -f repo=4test
+          echo "Testing Ubuntu ${{ matrix.ubuntu_version }} with PG_VERSION '${{ matrix.pg_version }}' and PACKAGE_SUFFIX '${{ matrix.package_suffix }}'"
+          docker build \
+            --build-arg BASE_VERSION=${{ matrix.ubuntu_version }} \
+            --build-arg PG_VERSION=${{ matrix.pg_version }} \
+            --build-arg PACKAGE_SUFFIX=${{ matrix.package_suffix }} \
+            -t documentserver:${{ matrix.ubuntu_version }} .
+
+      - name: Run image to verify build
+        run: |
+          docker run --rm documentserver:${{ matrix.ubuntu_version }} echo "Build successful for Ubuntu ${{ matrix.ubuntu_version }} with PG_VERSION '${{ matrix.pg_version }}' and PACKAGE_SUFFIX '${{ matrix.package_suffix }}'"
