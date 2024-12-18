@@ -42,6 +42,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         certbot \
         cron \
         curl \
+        erlang \
         htop \
         libaio1${PACKAGE_SUFFIX} \
         libasound2${PACKAGE_SUFFIX} \
@@ -65,7 +66,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        erlang \
         rabbitmq-server \
         redis-server \
         sudo \
