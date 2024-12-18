@@ -26,16 +26,15 @@ ARG ONLYOFFICE_VALUE=onlyoffice
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
     apt-get upgrade -y && \
-    apt-get -yq install wget apt-transport-https gnupg locales lsb-release curl && \
+    apt-get -yq install wget apt-transport-https gnupg locales lsb-release && \
     wget -q -O /etc/apt/sources.list.d/mssql-release.list https://packages.microsoft.com/config/ubuntu/$BASE_VERSION/prod.list && \
     wget -q -O /tmp/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add /tmp/microsoft.asc && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
-    curl -s https://packagecloud.io/install/repositories/cloudamqp/rabbitmq/script.deb.sh?any=true | bash && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
-    ACCEPT_EULA=Y apt-get -yq install \
+    ACCEPT_EULA=Y apt-get -yq install -f --reinstall \
         adduser \
         apt-utils \
         bomstrip \
@@ -66,7 +65,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        rabbitmq-server=3.10.7-1 \
+        rabbitmq-server \
         redis-server \
         sudo \
         supervisor \
