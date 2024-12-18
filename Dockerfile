@@ -63,8 +63,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        erlang-base && apt-cache policy && \
-        ACCEPT_EULA=Y apt-get -yq install \
         rabbitmq-server \
         redis-server \
         sudo \
