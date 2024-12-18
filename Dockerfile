@@ -30,6 +30,8 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    wget https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_6/rabbitmq-server_3.6.6-1_all.deb
+    dpkg -i rabbitmq-server_3.6.6-1_all.deb
     ACCEPT_EULA=Y apt-get -yq install -f \
         adduser \
         apt-utils \
@@ -60,7 +62,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        rabbitmq-server \
         redis-server \
         sudo \
         supervisor \
