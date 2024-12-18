@@ -24,14 +24,13 @@ ARG ONLYOFFICE_VALUE=onlyoffice
 
 RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     apt-get -y update && \
-    apt-get -yq install wget apt-transport-https gnupg locales lsb-release && \
+    apt-get -yq install wget apt-transport-https gnupg locales lsb-release curl && \
     wget -q -O /etc/apt/sources.list.d/mssql-release.list https://packages.microsoft.com/config/ubuntu/$BASE_VERSION/prod.list && \
     wget -q -O - https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
-    wget https://github.com/rabbitmq/rabbitmq-server/releases/download/rabbitmq_v3_6_6/rabbitmq-server_3.6.6-1_all.deb
-    dpkg -i rabbitmq-server_3.6.6-1_all.deb
+    curl -s https://packagecloud.io/install/repositories/cloudamqp/rabbitmq/script.deb.sh?any=true | bash
     ACCEPT_EULA=Y apt-get -yq install -f \
         adduser \
         apt-utils \
@@ -62,6 +61,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
+        rabbitmq-server=3.10.7-1 \
         redis-server \
         sudo \
         supervisor \
