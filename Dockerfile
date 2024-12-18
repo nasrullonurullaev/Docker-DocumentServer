@@ -32,7 +32,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
+    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && apt-cache policy && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
@@ -73,7 +73,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         unzip \
         xvfb \
         xxd \
-        zlib1g && apt-cache policy && \
+        zlib1g && \
     if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
         then echo 'msttcorefonts failed to download'; exit 1; fi  && \
     echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
