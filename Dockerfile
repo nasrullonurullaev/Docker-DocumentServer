@@ -64,7 +64,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql-client \
         pwgen \
         erlang-base \
-        rabbitmq-server \
+        rabbitmq-server --fix-missing \
         redis-server \
         sudo \
         supervisor \
