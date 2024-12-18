@@ -32,7 +32,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && apt-cache policy && \
+    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
     ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
@@ -63,8 +63,9 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        erlang-base \
-        rabbitmq-server --fix-missing \
+        erlang-base && apt-cache policy && \
+        ACCEPT_EULA=Y apt-get -yq install \
+        rabbitmq-server \
         redis-server \
         sudo \
         supervisor \
