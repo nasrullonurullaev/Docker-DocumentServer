@@ -63,6 +63,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
+        rabbitmq-server \
         redis-server \
         sudo \
         supervisor \
