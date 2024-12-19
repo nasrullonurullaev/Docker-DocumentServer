@@ -41,7 +41,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         certbot \
         cron \
         curl \
-        erlang \
+        erlang-base \
         htop \
         libaio1${PACKAGE_SUFFIX} \
         libasound2${PACKAGE_SUFFIX} \
