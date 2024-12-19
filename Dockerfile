@@ -30,18 +30,16 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     wget -q -O /tmp/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add /tmp/microsoft.asc && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
-    add-apt-repository ppa:rabbitmq/rabbitmq-erlang-26 && \
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
-    ACCEPT_EULA=Y apt-get -yq install -f \
+    ACCEPT_EULA=Y apt-get -yq install \
         adduser \
         apt-utils \
         bomstrip \
         certbot \
         cron \
         curl \
-        erlang-base \
         htop \
         libaio1${PACKAGE_SUFFIX} \
         libasound2${PACKAGE_SUFFIX} \
@@ -65,7 +63,6 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         postgresql \
         postgresql-client \
         pwgen \
-        rabbitmq-server \
         redis-server \
         sudo \
         supervisor \
@@ -77,6 +74,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         zlib1g && \
     if [  $(ls -l /usr/share/fonts/truetype/msttcorefonts | wc -l) -ne 61 ]; \
         then echo 'msttcorefonts failed to download'; exit 1; fi  && \
+    apt-get -yq install -f rabbitmq-server || dpkg --configure rabbitmq-server
     echo "SERVER_ADDITIONAL_ERL_ARGS=\"+S 1:1\"" | tee -a /etc/rabbitmq/rabbitmq-env.conf && \
     sed -i "s/bind .*/bind 127.0.0.1/g" /etc/redis/redis.conf && \
     sed 's|\(application\/zip.*\)|\1\n    application\/wasm wasm;|' -i /etc/nginx/mime.types && \
