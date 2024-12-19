@@ -30,8 +30,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
     wget -q -O /tmp/microsoft.asc https://packages.microsoft.com/keys/microsoft.asc && \
     apt-key add /tmp/microsoft.asc && \
     gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg < /tmp/microsoft.asc && \
-    wget https://launchpad.net/~rabbitmq/+archive/ubuntu/rabbitmq-erlang-26/+build/29296524/+files/erlang-base_26.2.5.5-1rmq1ppa1~ubuntu24.04.1_arm64.deb && \
-    dpkg -i erlang-base_26.2.5.5-1rmq1ppa1~ubuntu24.04.1_arm64.deb && \
+    add-apt-repository ppa:rabbitmq/rabbitmq-erlang-26
     apt-get -y update && \
     locale-gen en_US.UTF-8 && \
     echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections && \
@@ -42,6 +41,7 @@ RUN echo "#!/bin/sh\nexit 0" > /usr/sbin/policy-rc.d && \
         certbot \
         cron \
         curl \
+        erlang \
         htop \
         libaio1${PACKAGE_SUFFIX} \
         libasound2${PACKAGE_SUFFIX} \
