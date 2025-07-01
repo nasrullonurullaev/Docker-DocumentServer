@@ -108,7 +108,7 @@ target "documentserver-stable" {
     target = "documentserver-stable"
     dockerfile = "production.dockerfile"
     tags = ["docker.io/nasrullonurullaev5/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}",
-            "docker.io/nasrullonurullaev5}/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${SHORTER_TAG}",
+            "docker.io/nasrullonurullaev5/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${SHORTER_TAG}",
             "docker.io/nasrullonurullaev5/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${SHORTEST_TAG}",
             equal("true",LATEST) ? "docker.io/nasrullonurullaev5/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:latest": "",]
     platforms = ["linux/amd64", "linux/arm64"]
