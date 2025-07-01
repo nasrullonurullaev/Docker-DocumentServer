@@ -132,7 +132,7 @@ jobs:
               PRODUCT_EDITION="-de"
               ;;
           esac
-
+          echo "PRODUCT_EDITION=${PRODUCT_EDITION}" >> "$GITHUB_ENV"
           [ "${AMD64}" = true ] && PLATFORMS+=("amd64")
           [ "${ARM64}" = true ] && PLATFORMS+=("arm64")
           PLATFORM=$(echo ${PLATFORMS[*]/#/linux/} | tr ' ' ',')
@@ -165,22 +165,10 @@ jobs:
           echo "branch=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
         shell: bash
 
-      # Run scanner only when edition is community 
-      # and branch hit release/ or hotfix/
-      - name: Trigger zap manualy
-        if: >-
-             matrix.edition == 'community' &&
-             (startsWith(steps.build-ds.outputs.branch, 'release/') ||
-              startsWith(steps.build-ds.outputs.branch, 'hotfix/'))
-        env:
-          VERSION: ${{ steps.build-ds.outputs.version }}
-          BRANCH: ${{ steps.build-ds.outputs.branch }}
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-          REPO: ${{ github.repository }}
-        run: |
-            gh workflow run zap-ds.yaml \
-                 --repo "${REPO}" \
-                 -f branch="${BRANCH}" \
-                 -f version="${VERSION}"
-        shell: bash
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}   
+          repository: nasrullonurullaev5/4testing-documentserver${{ env.PRODUCT_EDITION }}
 
