@@ -1,5 +1,5 @@
 ### Arguments avavlivable only for FROM instruction ### 
-ARG PULL_TAG=latest
+ARG PULL_TAG=9.0.3.6
 ARG COMPANY_NAME=nasrullonurullaev5
 ARG PRODUCT_EDITION=
 ### Rebuild arguments
