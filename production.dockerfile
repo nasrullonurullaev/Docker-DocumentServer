@@ -1,6 +1,6 @@
 ### Arguments avavlivable only for FROM instruction ### 
 ARG PULL_TAG=latest
-ARG COMPANY_NAME=onlyoffice
+ARG COMPANY_NAME=nasrullonurullaev5
 ARG PRODUCT_EDITION=
 ### Rebuild arguments
 ARG UCS_PREFIX=
