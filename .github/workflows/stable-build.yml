@@ -75,4 +75,3 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           repository: ${{ env.COMPANY_NAME }}/${{ env.PRODUCT_NAME }}${{ matrix.edition }}
-          short-description: Feature-rich web-based office suite with a vast range of collaborative capabilities
