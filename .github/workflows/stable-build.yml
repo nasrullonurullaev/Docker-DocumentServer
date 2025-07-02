@@ -74,4 +74,4 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-          repository: nasrullonurullaev5/${{ env.PRODUCT_NAME }}${{ matrix.edition }}          
+          repository: ${{ env.COMPANY_NAME }}/${{ env.PRODUCT_NAME }}${{ matrix.edition }}          
