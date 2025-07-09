@@ -449,13 +449,7 @@ Official website: [www.onlyoffice.com](https://www.onlyoffice.com/?utm_source=gi
 
 Code repository: [github.com/ONLYOFFICE/DocumentServer](https://github.com/ONLYOFFICE/DocumentServer "https://github.com/ONLYOFFICE/DocumentServer")
 
-Docker Image: [github.com/ONLYOFFICE/Docker-DocumentServer](https://github.com/ONLYOFFICE/Docker-DocumentServer "https://github.com/ONLYOFFICE/Docker-DocumentServer")
 
-License: [GNU AGPL v3.0](https://onlyo.co/38YZGJh)
-
-Free version vs commercial builds comparison: https://github.com/ONLYOFFICE/DocumentServer#onlyoffice-docs-editions
-nasrullonurullaev
-## User Feedback and Support
 
 If you face any issues or have questions about this image, please visit our official forum: [forum.onlyoffice.com][1].
 
