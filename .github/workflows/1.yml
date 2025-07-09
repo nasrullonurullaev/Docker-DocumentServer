@@ -1,0 +1,28 @@
+name: Docker Hub Description Size Check
+
+on:
+  push:
+    paths:
+      - README.md
+
+env:
+  MAX_BYTES: "25000"
+
+jobs:
+  description_size_check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: measure
+        run: echo "bytes=$(wc -c < README.md | tr -d '[:space:]')" >> "$GITHUB_OUTPUT"
+
+      - env:
+          BYTES: ${{ steps.measure.outputs.bytes }}
+        run: |
+          if [ "$BYTES" -gt "$MAX_BYTES" ]; then
+            echo "## README.md — ${BYTES} bytes (limit $MAX_BYTES)" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
