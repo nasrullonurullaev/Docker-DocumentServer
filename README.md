@@ -215,7 +215,25 @@ Below is the complete list of parameters that can be set using environment varia
 ONLYOFFICE Document Server is a part of ONLYOFFICE Community Edition that comprises also Community Server and Mail Server. To install them, follow these easy steps:
 
 **STEP 1**: Create the `onlyoffice` network.
+ALLOW_META_IP_ADDRESS**: Defines if it is allowed to connect meta IP address or not. Defaults to `false`.
+- **ALLOW_PRIVATE_IP_ADDRESS**: Defines if it is allowed to connect private IP address or not. Defaults to `false`.
+- **USE_UNAUTHORIZED_STORAGE**: Set to `true`if using selfsigned certificates for your storage server e.g. Nextcloud. Defaults to `false`
+- **GENERATE_FONTS**: When 'true' regenerates fonts list and the fonts thumbnails etc. at each start. Defaults to `true`
+- **METRICS_ENABLED**: Specifies the enabling StatsD for ONLYOFFICE Document Server. Defaults to `false`.
+- **METRICS_HOST**: Defines StatsD listening host. Defaults to `localhost`.
+- **METRICS_PORT**: Defines StatsD listening port. Defaults to `8125`.
+- **METRICS_PREFIX**: Defines StatsD metrics prefix for backend services. Defaults to `ds.`.
+- **LETS_ENCRYPT_DOMAIN**: Defines the domain for Let's Encrypt certificate.
+- **LETS_ENCRYPT_MAIL**: Defines the domain administator mail address for Let's Encrypt certificate.
+- **PLUGINS_ENABLED**: Defines whether to enable default plugins. Defaults to `true`.
 
+## Installing ONLYOFFICE Document Server integrated with Community and Mail Servers
+
+ONLYOFFICE Document Server is a part of ONLYOFFICE Community Edition that comprises also Community Server and Mail Server. To install them, follow these easy steps:
+
+**STEP 1**: Create the `onlyoffice` network.
+
+```bash
 ```bash
 docker network create --driver bridge onlyoffice
 ```
