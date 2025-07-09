@@ -19,7 +19,7 @@
 * [User Feedback and Support](#user-feedback-and-support)
 
 ## Overview
-
+kyukyukyukyukkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk
 ONLYOFFICE Docs (Document Server) is an open-source office suite that comprises all the tools you need to work with documents, spreadsheets, presentations, PDFs, and PDF forms. The suite supports office files of all popular formats (DOCX, ODT, XLSX, ODS, CSV, PPTX, ODP, etc.) and enables collaborative editing in real time.
 
 Starting from version 6.0, Document Server is distributed as ONLYOFFICE Docs. It has [three editions](https://github.com/ONLYOFFICE/DocumentServer#onlyoffice-docs-editions). With this image, you will install the free Community version. 
@@ -75,6 +75,37 @@ All the data are stored in the specially-designated directories, **data volumes*
 * **/var/lib/onlyoffice** for file cache
 * **/var/lib/postgresql** for database
 
+To get access to your data from outside the container, you need to mount the volumes. It can be done by specifying the '-v' option in the docker run command.
+
+    sudo docker run -i -t -d -p 80:80 \
+        -v /app/onlyoffice/DocumentServer/logs:/var/log/onlyoffice  \
+        -v /app/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data  \
+        -v /app/onlyoffice/DocumentServer/lib:/var/lib/onlyoffice \
+        -v /app/onlyoffice/DocumentServer/rabbitmq:/var/lib/rabbitmq \
+        -v /app/onlyoffice/DocumentServer/redis:/var/lib/redis \
+        -v /app/onlyoffice/DocumentServer/db:/var/lib/postgresql  onlyoffice/documentserver
+
+Normally, you do not need to store container data because the container's operation does not depend on its state. Saving data will be useful:
+* For easy access to container data, such as logs
+* To remove the limit on the size of the data inside the container
+* When using services launched outside the container such as PostgreSQL, Redis, RabbitMQ
+
+### Running ONLYOFFICE Document Server on Different Port
+
+To change the port, use the -p command. E.g.: to make your portal accessible via port 8080 execute the following command:
+
+    sudo docker run -i -t -d -p 8080:80 onlyoffice/documentserver
+
+### Running ONLYOFFICE Document Server using HTTPS
+
+        sudo docker run -i -t -d -p 443:443 \
+        -v /app/onlyoffice/DocumentServer/data:/var/www/onlyoffice/Data  onlyoffice/documentserver
+
+Access to the onlyoffice application can be secured using SSL so as to prevent unauthorized access. While a CA certified SSL certificate allows for verification of trust via the CA, a self signed certificates can also provide an equal level of trust verification as long as each client takes some additional steps to verify the identity of your website. Below the instructions on achieving this are provided.
+
+To secure the application via SSL basically two things are needed:
+
+- **Private key (.key)**
 To get access to your data from outside the container, you need to mount the volumes. It can be done by specifying the '-v' option in the docker run command.
 
     sudo docker run -i -t -d -p 80:80 \
