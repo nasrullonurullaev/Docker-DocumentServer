@@ -1,0 +1,386 @@
+# AppArmor profile for ONLYOFFICE Docker-DocumentServer single-container image.
+# Target: Ubuntu 24.04 based ONLYOFFICE Docs container with nginx, Supervisor,
+# PostgreSQL, RabbitMQ, Redis, cron, converter/docservice, and optional certbot.
+#
+# Install:
+#   sudo nano /etc/apparmor.d/containers/onlyoffice-documentserver
+#   sudo apparmor_parser -r -W /etc/apparmor.d/containers/onlyoffice-documentserver
+# Run:
+#   docker run --security-opt apparmor=onlyoffice-documentserver ... onlyoffice/documentserver
+#
+# If you build with a non-default COMPANY_NAME, change @{OO_COMPANY} below.
+
+abi <abi/3.0>,
+#include <tunables/global>
+
+@{OO_COMPANY}=onlyoffice
+@{OO_APPROOT}=/var/www/@{OO_COMPANY}/documentserver
+@{OO_EXAMPLE}=/var/www/@{OO_COMPANY}/documentserver-example
+@{OO_DATA}=/var/www/@{OO_COMPANY}/Data
+@{OO_LOG}=/var/log/@{OO_COMPANY}
+@{OO_LIB}=/var/lib/@{OO_COMPANY}
+@{OO_CONF}=/etc/@{OO_COMPANY}
+
+profile onlyoffice-documentserver flags=(attach_disconnected,mediate_deleted) {
+  # Basic libc, shell, DNS, CA, OpenSSL and font reads.
+  # These abstractions are available on Ubuntu hosts with apparmor installed.
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  #include <abstractions/openssl>
+  #include <abstractions/ssl_certs>
+  #include <abstractions/fonts>
+
+  ########################################
+  # Capabilities: keep only what this image normally needs as root.
+  ########################################
+  capability audit_write,
+  capability chown,
+  capability dac_override,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability net_bind_service,
+  capability setgid,
+  capability setuid,
+
+  ########################################
+  # Networking: HTTP/HTTPS, DNS, DB/AMQP/Redis, localhost service sockets.
+  # No IPv4/IPv6 raw or packet sockets; NETLINK_AUDIT is kept for sudo/PAM.
+  ########################################
+  network inet tcp,
+  network inet udp,
+  network inet6 tcp,
+  network inet6 udp,
+  network unix stream,
+  network unix dgram,
+
+  # sudo/PAM/libaudit uses NETLINK_AUDIT even inside the container.
+  network netlink raw,
+  deny network inet raw,
+  deny network inet6 raw,
+  deny network packet,
+
+  ########################################
+  # Process control: allow Docker/runc stop and in-container supervisor signals.
+  ########################################
+  signal (receive) peer=unconfined,
+  signal (receive) peer=runc,
+  signal (receive) peer=crun,
+  signal (send,receive) peer=onlyoffice-documentserver,
+  ptrace (trace,tracedby,read,readby) peer=onlyoffice-documentserver,
+
+  ########################################
+  # No mounting from inside the container.
+  ########################################
+  deny mount,
+  deny remount,
+  deny umount,
+  deny pivot_root,
+
+  ########################################
+  # Baseline read access for the container filesystem.
+  # Writes are granted only in the runtime/config/data sections below.
+  ########################################
+  / r,
+  /** r,
+
+  ########################################
+  # Executables and ELF/shared-object mmap.
+  # Kept broad enough for Debian/Ubuntu init scripts, shell helpers, Perl/Python,
+  # Erlang/RabbitMQ, PostgreSQL, nginx, certbot, sql clients and ONLYOFFICE tools.
+  ########################################
+  /bin/** mrix,
+  /sbin/** mrix,
+  /usr/bin/** mrix,
+  # Explicit interpreter/wrapper rules for PostgreSQL client wrappers.
+  /usr/bin/perl ix,
+  /usr/bin/perl* ix,
+  /usr/share/postgresql-common/** rix,
+  /usr/lib/postgresql/** mrix,
+  /usr/sbin/** mrix,
+  /usr/lib/** mrix,
+  /usr/libexec/** mrix,
+  /usr/local/bin/** mrix,
+  /usr/local/sbin/** mrix,
+  /etc/init.d/** rix,
+  /usr/sbin/service rix,
+  /app/ds/** rix,
+  /opt/mssql-tools18/** mrix,
+  /usr/share/instantclient/** mrix,
+  # ONLYOFFICE native service/tool entrypoints. The rest of the app root is read-only
+  # except for explicit maintenance-output paths below.
+  @{OO_APPROOT}/npm/json mrix,
+  @{OO_APPROOT}/server/DocService/docservice mrix,
+  @{OO_APPROOT}/server/FileConverter/converter mrix,
+  @{OO_APPROOT}/server/FileConverter/bin/** mrix,
+  @{OO_APPROOT}/server/tools/** mrix,
+  @{OO_APPROOT}/server/Metrics/** mrix,
+  @{OO_APPROOT}/server/AdminPanel/** mrix,
+  @{OO_APPROOT}/documentbuilder/** mrix,
+  @{OO_APPROOT}/server/DocBuilder/** mrix,
+  @{OO_EXAMPLE}/example mrix,
+
+  ########################################
+  # Devices required by shells, daemons, node/converter, Xvfb/font tooling.
+  ########################################
+  /dev/null rw,
+  /dev/zero r,
+  /dev/full rw,
+  /dev/random r,
+  /dev/urandom r,
+  /dev/tty rw,
+  /dev/console rw,
+  /dev/ptmx rw,
+  /dev/pts/ rw,
+  /dev/pts/** rw,
+  /dev/fd/** rw,
+  /dev/stdin rw,
+  /dev/stdout rw,
+  /dev/stderr rw,
+  /dev/shm/ rw,
+  /dev/shm/** rwkl,
+  /dev/log rw,
+
+  ########################################
+  # /proc and /sys: readable enough for service discovery, but kernel/host
+  # mutation points stay blocked. /proc/*/fd write is needed for stdout logging.
+  ########################################
+  @{PROC}/ r,
+  @{PROC}/** r,
+  @{PROC}/[0-9]*/fd/[0-9]* rw,
+  @{PROC}/self/fd/[0-9]* rw,
+  @{PROC}/thread-self/fd/[0-9]* rw,
+  # pam_loginuid/sudo may need to set loginuid; keep other proc writes denied by default.
+  @{PROC}/[0-9]*/loginuid w,
+  @{PROC}/self/loginuid w,
+  @{PROC}/thread-self/loginuid w,
+  deny @{PROC}/* w,
+  deny @{PROC}/sys/[^k]** w,
+  deny @{PROC}/sys/kernel/{?,??,[^s][^h][^m]**} w,
+  deny @{PROC}/sysrq-trigger rwklx,
+  deny @{PROC}/kcore rwklx,
+  deny @{PROC}/kmem rwklx,
+  deny @{PROC}/mem rwklx,
+  deny @{PROC}/[0-9]*/mem rwklx,
+  deny @{PROC}/[0-9]*/pagemap rwklx,
+  deny @{PROC}/[0-9]*/clear_refs rwklx,
+
+  /sys/ r,
+  /sys/** r,
+  deny /sys/[^f]*/** wklx,
+  deny /sys/f[^s]*/** wklx,
+  deny /sys/fs/[^c]*/** wklx,
+  deny /sys/fs/c[^g]*/** wklx,
+  deny /sys/fs/cg[^r]*/** wklx,
+  deny /sys/firmware/** rwklx,
+  deny /sys/devices/virtual/powercap/** rwklx,
+  deny /sys/kernel/security/** rwklx,
+  deny /sys/kernel/debug/** rwklx,
+
+  ########################################
+  # Runtime tmp/run/lock space.
+  ########################################
+  /tmp/ rw,
+  /tmp/** rwkl,
+  /tmp/.X11-unix/ rw,
+  /tmp/.X11-unix/** rwkl,
+  /tmp/.ICE-unix/ rw,
+  /tmp/.ICE-unix/** rwkl,
+  /var/tmp/ rw,
+  /var/tmp/** rwkl,
+  /run/ rw,
+  /run/** rwkl,
+  /var/run/ rw,
+  /var/run/** rwkl,
+  /run/lock/ rw,
+  /run/lock/** rwkl,
+  /var/lock/ rw,
+  /var/lock/** rwkl,
+
+  ########################################
+  # ONLYOFFICE mutable state, logs, document cache, user data, WOPI keys, certs.
+  ########################################
+  /var/log/ rw,
+  @{OO_LOG}/ rw,
+  @{OO_LOG}/** rwkl,
+  @{OO_LOG}-example/ rw,
+  @{OO_LOG}-example/** rwkl,
+  /var/log/nginx rw,
+  /var/log/nginx/** rwkl,
+
+  /var/lib/ rw,
+  @{OO_LIB}/ rw,
+  @{OO_LIB}/** rwkl,
+  @{OO_LIB}-example/ rw,
+  @{OO_LIB}-example/** rwkl,
+
+  /var/www/ rw,
+  /var/www/@{OO_COMPANY}/ rw,
+  @{OO_DATA}/ rw,
+  @{OO_DATA}/** rwkl,
+
+  ########################################
+  # ONLYOFFICE app-root writes required by default startup maintenance scripts:
+  # font generation, theme thumbnails, js caches, plugin initialization and gzip.
+  # For tighter production, disable GENERATE_FONTS/PLUGINS after first boot and
+  # remove most write rules in this block except **.gz if static gzip remains on.
+  ########################################
+  @{OO_APPROOT}/fonts/ rw,
+  @{OO_APPROOT}/fonts/** rwkl,
+  @{OO_APPROOT}/sdkjs/ rw,
+  @{OO_APPROOT}/sdkjs/** rwkl,
+  @{OO_APPROOT}/server/FileConverter/bin/ rw,
+  @{OO_APPROOT}/server/FileConverter/bin/** rwkl,
+  @{OO_APPROOT}/sdkjs-plugins/ rw,
+  @{OO_APPROOT}/sdkjs-plugins/** rwkl,
+  @{OO_APPROOT}/web-apps/apps/api/documents/ rw,
+  @{OO_APPROOT}/web-apps/apps/api/documents/api.js rwkl,
+  @{OO_APPROOT}/web-apps/apps/api/documents/sed* rwkl,
+  @{OO_APPROOT}/**.gz rwkl,
+
+  @{OO_EXAMPLE}/welcome/ rw,
+  @{OO_EXAMPLE}/welcome/** rwkl,
+  @{OO_EXAMPLE}/**.gz rwkl,
+
+  ########################################
+  # Container config rewritten by entrypoint and helper scripts.
+  ########################################
+  /etc/ rw,
+  /etc/sed* rwkl,
+  /etc/logrotate.conf rwkl,
+
+  /etc/@{OO_COMPANY}/ rw,
+  @{OO_CONF}/** rwkl,
+  /etc/@{OO_COMPANY}-example/ rw,
+  /etc/@{OO_COMPANY}-example/** rwkl,
+
+  /etc/nginx/ rw,
+  /etc/nginx/** rwkl,
+  /var/lib/nginx/ rw,
+  /var/lib/nginx/** rwkl,
+  /var/cache/nginx/ rw,
+  /var/cache/nginx/** rwkl,
+
+  /etc/supervisor/ rw,
+  /etc/supervisor/** rwkl,
+  /var/log/supervisor/ rw,
+  /var/log/supervisor/** rwkl,
+
+  /etc/default/ rw,
+  /etc/default/rabbitmq-server rwkl,
+  /etc/default/sed* rwkl,
+  /etc/rabbitmq/ rw,
+  /etc/rabbitmq/** rwkl,
+  /var/lib/rabbitmq/ rw,
+  /var/lib/rabbitmq/** rwkl,
+  /var/log/rabbitmq/ rw,
+  /var/log/rabbitmq/** rwkl,
+
+  /etc/postgresql/ rw,
+  /etc/postgresql/** rwkl,
+  /var/lib/postgresql/ rw,
+  /var/lib/postgresql/** rwkl,
+  /var/log/postgresql/ rw,
+  /var/log/postgresql/** rwkl,
+
+  /etc/redis/ rw,
+  /etc/redis/** rwkl,
+  /var/lib/redis/ rw,
+  /var/lib/redis/** rwkl,
+  /var/log/redis/ rw,
+  /var/log/redis/** rwkl,
+
+  /etc/cron.d/ rw,
+  /etc/cron.d/** rwkl,
+  /var/spool/cron/ rw,
+  /var/spool/cron/** rwkl,
+  /var/lib/cron/ rw,
+  /var/lib/cron/** rwkl,
+
+  /usr/share/ca-certificates/ rw,
+  /usr/share/ca-certificates/ds/ rw,
+  /usr/share/ca-certificates/ds/** rwkl,
+
+  # Optional Let's Encrypt/certbot support.
+  /etc/letsencrypt/ rw,
+  /etc/letsencrypt/** rwkl,
+  /var/lib/letsencrypt/ rw,
+  /var/lib/letsencrypt/** rwkl,
+  /var/log/letsencrypt/ rw,
+  /var/log/letsencrypt/** rwkl,
+
+  ########################################
+  # Font caches and custom-font volume.
+  ########################################
+  /usr/share/fonts/ r,
+  /usr/share/fonts/** r,
+  /usr/share/fonts/truetype/custom/ rw,
+  /usr/share/fonts/truetype/custom/** rwkl,
+  /var/cache/fontconfig/ rw,
+  /var/cache/fontconfig/** rwkl,
+  /root/.cache/ rw,
+  /root/.cache/** rwkl,
+  /home/*/.cache/ rw,
+  /home/*/.cache/** rwkl,
+
+  ########################################
+  # Useful local-service sockets and PID/log files that may appear outside
+  # daemon-specific directories on Ubuntu/Debian.
+  ########################################
+  /run/postgresql/ rw,
+  /run/postgresql/** rwkl,
+  /run/rabbitmq/ rw,
+  /run/rabbitmq/** rwkl,
+  /run/redis/ rw,
+  /run/redis/** rwkl,
+  /run/nginx.pid rwkl,
+  /run/supervisord.pid rwkl,
+  /run/supervisor.sock rwkl,
+  /run/crond.pid rwkl,
+  /var/run/postgresql/ rw,
+  /var/run/postgresql/** rwkl,
+  /var/run/rabbitmq/ rw,
+  /var/run/rabbitmq/** rwkl,
+  /var/run/redis/ rw,
+  /var/run/redis/** rwkl,
+  /var/run/nginx.pid rwkl,
+  /var/run/supervisord.pid rwkl,
+  /var/run/supervisor.sock rwkl,
+  /var/run/crond.pid rwkl,
+
+  ########################################
+  # Protect container rootfs control files and common escape/host-integration
+  # paths even if accidentally bind-mounted.
+  ########################################
+  deny /bin/** wkl,
+  deny /sbin/** wkl,
+  deny /lib/** wkl,
+  deny /lib32/** wkl,
+  deny /lib64/** wkl,
+  deny /usr/bin/** wkl,
+  deny /usr/sbin/** wkl,
+  deny /usr/lib/** wkl,
+  deny /usr/libexec/** wkl,
+  deny /usr/local/bin/** wkl,
+  deny /usr/local/sbin/** wkl,
+  deny /app/ds/** wkl,
+  deny /opt/mssql-tools18/** wkl,
+  deny /usr/share/instantclient/** wkl,
+  deny /etc/passwd wkl,
+  deny /etc/group wkl,
+  deny /etc/gshadow wkl,
+  deny /etc/shadow wkl,
+  deny /etc/sudoers wkl,
+  deny /etc/sudoers.d/** wkl,
+  deny /etc/apt/** wkl,
+  deny /etc/ssh/** rwklx,
+  deny /root/.ssh/** rwklx,
+  deny /var/run/docker.sock rwklx,
+  deny /run/docker.sock rwklx,
+  deny /var/lib/docker/** rwklx,
+  deny /run/containerd/** rwklx,
+  deny /var/run/containerd/** rwklx,
+  deny /mnt/** wklx,
+  deny /media/** wklx,
+  deny /host/** rwklx,
+}
