@@ -79,11 +79,16 @@ jobs:
             "${build_args[@]}" \
             "${CONTEXT}"
 
-      - name: Run TruffleHog against built Docker image
+      - name: Save Docker image for scanning
+        run: |
+          set -euo pipefail
+          docker save --output "${RUNNER_TEMP}/documentserver-trufflehog.tar" "${IMAGE_TAG}"
+
+      - name: Run TruffleHog against built Docker image archive
         run: |
           set -euo pipefail
           docker run --rm \
-            -v /var/run/docker.sock:/var/run/docker.sock \
+            -v "${RUNNER_TEMP}:/scan:ro" \
             trufflesecurity/trufflehog:latest \
-            docker --image "${IMAGE_TAG}" \
+            docker --image file:///scan/documentserver-trufflehog.tar \
             --results=verified,unknown
