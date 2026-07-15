@@ -43,7 +43,6 @@ scan_archive() {
   docker rm "${TRIVY_CONTAINER}" >/dev/null
   TRIVY_CONTAINER=""
 
-  return "${scan_exit}"
 }
 
 if [ -f "${IMAGE_TO_SCAN}" ]; then
