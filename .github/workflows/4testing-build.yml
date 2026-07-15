@@ -39,7 +39,7 @@ on:
         default: true
 
 env: 
-  COMPANY_NAME: "onlyoffice"
+  COMPANY_NAME: "nasrullonurullaev5"
   PRODUCT_NAME: "documentserver"
       
 jobs:
