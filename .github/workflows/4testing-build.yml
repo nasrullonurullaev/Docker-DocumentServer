@@ -37,6 +37,10 @@ on:
         type: boolean
         description: 'Build Developer Edition'
         default: true
+      scan_only:
+        type: boolean
+        description: 'Scan locally without publishing images'
+        default: false
 
 env: 
   COMPANY_NAME: "onlyoffice"
@@ -191,6 +195,7 @@ jobs:
         shell: bash
 
       - name: Publish scanned image
+        if: ${{ !inputs.scan_only }}
         env:
           IMAGE: ${{ matrix.image }}
           PACKAGE_BASEURL: ${{ secrets.REPO_BASEURL }}
@@ -201,6 +206,7 @@ jobs:
       # and branch hit release/ or hotfix/
       - name: Trigger zap manualy
         if: >-
+             !inputs.scan_only &&
              matrix.edition == 'community' &&
              matrix.platform == 'amd64' &&
              (startsWith(steps.build-ds.outputs.branch, 'release/') ||
@@ -238,7 +244,7 @@ jobs:
   make-images:
     runs-on: ubuntu-latest
     needs: [prepare,build]
-    if: always()
+    if: ${{ always() && !inputs.scan_only }}
     strategy:
       fail-fast: false
       matrix:
