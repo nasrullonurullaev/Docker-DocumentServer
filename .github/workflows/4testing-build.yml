@@ -194,6 +194,22 @@ jobs:
         run: bash tests/scan-image-secrets.sh "${IMAGE_TO_SCAN}"
         shell: bash
 
+      - name: Cache GitGuardian scan results
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ggshield
+          key: ggshield-${{ runner.os }}-${{ matrix.platform }}-${{ matrix.edition }}-v1
+
+      - name: Install ggshield
+        run: python -m pip install --disable-pip-version-check ggshield==1.51.0
+
+      - name: Scan image with GitGuardian
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+          IMAGE_TO_SCAN: ${{ steps.build-ds.outputs.image }}
+        run: ggshield secret scan docker --docker-timeout 900 "${IMAGE_TO_SCAN}"
+        shell: bash
+
       - name: Publish scanned image
         if: ${{ !inputs.scan_only }}
         env:
