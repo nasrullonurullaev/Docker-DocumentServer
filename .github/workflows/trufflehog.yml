@@ -1,0 +1,89 @@
+name: TruffleHog Dockerfile image scan
+
+on:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'Dockerfile.enterprise'
+      - 'production.dockerfile'
+      - '.github/workflows/trufflehog.yml'
+      - 'config/**'
+      - 'fonts/**'
+      - 'oracle/**'
+      - 'run-document-server.sh'
+  workflow_dispatch:
+    inputs:
+      dockerfile:
+        description: 'Dockerfile to build and scan'
+        type: string
+        required: true
+        default: 'Dockerfile'
+      context:
+        description: 'Docker build context'
+        type: string
+        required: true
+        default: '.'
+      build_args:
+        description: 'Optional Docker build args, one KEY=VALUE per line'
+        type: string
+        required: false
+        default: ''
+  workflow_call:
+    inputs:
+      dockerfile:
+        description: 'Dockerfile to build and scan'
+        type: string
+        required: false
+        default: 'Dockerfile'
+      context:
+        description: 'Docker build context'
+        type: string
+        required: false
+        default: '.'
+      build_args:
+        description: 'Optional Docker build args, one KEY=VALUE per line'
+        type: string
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  trufflehog:
+    name: Build Dockerfile image and scan for secrets
+    runs-on: ubuntu-latest
+    env:
+      DOCKERFILE: ${{ inputs.dockerfile || github.event.inputs.dockerfile || 'Dockerfile' }}
+      CONTEXT: ${{ inputs.context || github.event.inputs.context || '.' }}
+      BUILD_ARGS: ${{ inputs.build_args || github.event.inputs.build_args || '' }}
+      IMAGE_TAG: documentserver-trufflehog:${{ github.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Build Docker image from Dockerfile
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          build_args=()
+          while IFS= read -r arg; do
+            [ -z "${arg}" ] && continue
+            build_args+=(--build-arg "${arg}")
+          done <<< "${BUILD_ARGS}"
+
+          docker build \
+            --file "${DOCKERFILE}" \
+            --tag "${IMAGE_TAG}" \
+            "${build_args[@]}" \
+            "${CONTEXT}"
+
+      - name: Run TruffleHog against built Docker image
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            trufflesecurity/trufflehog:latest \
+            docker --image "${IMAGE_TAG}" \
+            --results=verified,unknown
