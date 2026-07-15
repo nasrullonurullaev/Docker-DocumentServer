@@ -8,7 +8,7 @@ services:
     # Uncomment to enable JWT validation:
     #environment:
     #  - JWT_ENABLED=true
-    #  - JWT_SECRET=secret
+    #  - JWT_SECRET=<replace-with-secure-random-value>
     #  - JWT_HEADER=Authorization
     #  - JWT_IN_BODY=true
     ports:

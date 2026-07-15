@@ -6,6 +6,7 @@ PRODUCT_VERSION ?= 0.0.0
 BUILD_NUMBER ?= 0
 BUILD_CHANNEL ?= nightly
 ONLYOFFICE_VALUE ?= onlyoffice
+GITLEAKS_IMAGE ?= ghcr.io/gitleaks/gitleaks:latest
 
 COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
 DOCKERFILE := $(if $(PRODUCT_EDITION),Dockerfile.enterprise,Dockerfile)
@@ -25,7 +26,7 @@ DOCKER_IMAGE := $(DOCKER_ORG)/4testing-$(PRODUCT_NAME)$(PRODUCT_EDITION)
 DOCKER_DUMMY := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME)$(PRODUCT_EDITION)__$(DOCKER_TAG).dummy
 DOCKER_ARCH := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME)_$(DOCKER_TAG).tar.gz
 
-.PHONY: all clean clean-docker image deploy docker
+.PHONY: all clean clean-docker image deploy docker secret-scan
 
 $(DOCKER_DUMMY):
 	docker build -f $(DOCKERFILE) \
@@ -64,3 +65,6 @@ ifeq ($(BUILD_CHANNEL),nightly)
 		docker push $(DOCKER_IMAGE):latest && break || sleep 1m; \
 	done
 endif
+
+secret-scan:
+	docker run --rm -v "$$(pwd):/repo:ro" $(GITLEAKS_IMAGE) detect --source /repo --verbose
