@@ -1,4 +1,4 @@
-name: TruffleHog Dockerfile image scan
+name: TruffleHog Docker image scan
 
 on:
   pull_request:
@@ -13,35 +13,25 @@ on:
       - 'run-document-server.sh'
   workflow_dispatch:
     inputs:
-      dockerfile:
-        description: 'Dockerfile to build and scan'
-        type: string
-        required: true
-        default: 'Dockerfile'
       context:
         description: 'Docker build context'
         type: string
         required: true
         default: '.'
       build_args:
-        description: 'Optional Docker build args, one KEY=VALUE per line'
+        description: 'Optional Docker build args, one KEY=VALUE per line, added to every edition build'
         type: string
         required: false
         default: ''
   workflow_call:
     inputs:
-      dockerfile:
-        description: 'Dockerfile to build and scan'
-        type: string
-        required: false
-        default: 'Dockerfile'
       context:
         description: 'Docker build context'
         type: string
         required: false
         default: '.'
       build_args:
-        description: 'Optional Docker build args, one KEY=VALUE per line'
+        description: 'Optional Docker build args, one KEY=VALUE per line, added to every edition build'
         type: string
         required: false
         default: ''
@@ -51,23 +41,45 @@ permissions:
 
 jobs:
   trufflehog:
-    name: Build Dockerfile image and scan for secrets
+    name: Scan ${{ matrix.edition_name }} Docker image for secrets
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - edition: community
+            edition_name: Community Edition
+            dockerfile: Dockerfile
+            product_edition: ''
+          - edition: enterprise
+            edition_name: Enterprise Edition
+            dockerfile: Dockerfile.enterprise
+            product_edition: '-ee'
+          - edition: developer
+            edition_name: Developer Edition
+            dockerfile: Dockerfile.enterprise
+            product_edition: '-de'
     env:
-      DOCKERFILE: ${{ inputs.dockerfile || github.event.inputs.dockerfile || 'Dockerfile' }}
       CONTEXT: ${{ inputs.context || github.event.inputs.context || '.' }}
       BUILD_ARGS: ${{ inputs.build_args || github.event.inputs.build_args || '' }}
-      IMAGE_TAG: documentserver-trufflehog:${{ github.sha }}
+      IMAGE_TAG: documentserver-trufflehog-${{ matrix.edition }}:${{ github.sha }}
+      IMAGE_ARCHIVE: documentserver-trufflehog-${{ matrix.edition }}.tar
+      DOCKERFILE: ${{ matrix.dockerfile }}
+      PRODUCT_EDITION: ${{ matrix.product_edition }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
 
-      - name: Build Docker image from Dockerfile
+      - name: Build ${{ matrix.edition_name }} Docker image
         shell: bash
         run: |
           set -euo pipefail
 
           build_args=()
+          if [ -n "${PRODUCT_EDITION}" ]; then
+            build_args+=(--build-arg "PRODUCT_EDITION=${PRODUCT_EDITION}")
+          fi
+
           while IFS= read -r arg; do
             [ -z "${arg}" ] && continue
             build_args+=(--build-arg "${arg}")
@@ -79,16 +91,16 @@ jobs:
             "${build_args[@]}" \
             "${CONTEXT}"
 
-      - name: Save Docker image for scanning
+      - name: Save ${{ matrix.edition_name }} Docker image for scanning
         run: |
           set -euo pipefail
-          docker save --output "${RUNNER_TEMP}/documentserver-trufflehog.tar" "${IMAGE_TAG}"
+          docker save --output "${RUNNER_TEMP}/${IMAGE_ARCHIVE}" "${IMAGE_TAG}"
 
-      - name: Run TruffleHog against built Docker image archive
+      - name: Run TruffleHog against ${{ matrix.edition_name }} Docker image archive
         run: |
           set -euo pipefail
           docker run --rm \
             -v "${RUNNER_TEMP}:/scan:ro" \
             trufflesecurity/trufflehog:latest \
-            docker --image file:///scan/documentserver-trufflehog.tar \
+            docker --image "file:///scan/${IMAGE_ARCHIVE}" \
             --only-verified
