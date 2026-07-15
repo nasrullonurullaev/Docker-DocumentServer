@@ -172,6 +172,13 @@ jobs:
           
           echo "version=${TAG}" >> "$GITHUB_OUTPUT"
           echo "branch=${BRANCH_NAME}" >> "$GITHUB_OUTPUT"
+          echo "image=docker.io/${COMPANY_NAME}/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}" >> "$GITHUB_OUTPUT"
+        shell: bash
+
+      - name: Scan image for secrets
+        env:
+          IMAGE_TO_SCAN: ${{ steps.build-ds.outputs.image }}
+        run: bash tests/scan-image-secrets.sh "${IMAGE_TO_SCAN}"
         shell: bash
 
       # Run scanner only when edition is community 
