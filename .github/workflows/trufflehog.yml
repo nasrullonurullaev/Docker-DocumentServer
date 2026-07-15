@@ -91,4 +91,4 @@ jobs:
             -v "${RUNNER_TEMP}:/scan:ro" \
             trufflesecurity/trufflehog:latest \
             docker --image file:///scan/documentserver-trufflehog.tar \
-            --results=verified,unknown
+            --only-verified
