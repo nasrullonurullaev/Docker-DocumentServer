@@ -162,9 +162,18 @@ jobs:
           export PREFIX_NAME=4testing-
           export TAG=${PRODUCT_VERSION}.${BUILD_NUMBER}-${{ matrix.platform }}
 
-          ### ==>> Build and push images at this step ###
+          {
+            echo "PRODUCT_EDITION=${PRODUCT_EDITION}"
+            echo "PACKAGE_VERSION=${PACKAGE_VERSION}"
+            echo "BUILD_CHANNEL=${BUILD_CHANNEL}"
+            echo "PREFIX_NAME=${PREFIX_NAME}"
+            echo "TAG=${TAG}"
+            echo "PLATFORM=${PLATFORM}"
+          } >> "$GITHUB_ENV"
 
-          docker buildx bake --sbom=true --provenance=mode=max -f docker-bake.hcl "${IMAGE}" 
+          ### ==>> Build and load the image for security scanning ###
+
+          docker buildx bake -f docker-bake.hcl "${IMAGE}" --load
           echo "DONE: Build success"
 
           ### Set output for Zap scanner
@@ -179,6 +188,13 @@ jobs:
         env:
           IMAGE_TO_SCAN: ${{ steps.build-ds.outputs.image }}
         run: bash tests/scan-image-secrets.sh "${IMAGE_TO_SCAN}"
+        shell: bash
+
+      - name: Publish scanned image
+        env:
+          IMAGE: ${{ matrix.image }}
+          PACKAGE_BASEURL: ${{ secrets.REPO_BASEURL }}
+        run: docker buildx bake --sbom=true --provenance=mode=max -f docker-bake.hcl "${IMAGE}" --push
         shell: bash
 
       # Run scanner only when edition is community 
