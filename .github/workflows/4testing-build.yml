@@ -39,7 +39,7 @@ on:
         default: true
 
 env: 
-  COMPANY_NAME: "nasrullonurullaev5"
+  COMPANY_NAME: "onlyoffice"
   PRODUCT_NAME: "documentserver"
       
 jobs:
@@ -164,7 +164,7 @@ jobs:
 
           ### ==>> Build and push images at this step ###
 
-          docker buildx bake --sbom=true --provenance=mode=max -f docker-bake.hcl "${IMAGE}" --push
+          docker buildx bake --sbom=true --provenance=mode=max -f docker-bake.hcl "${IMAGE}" 
           echo "DONE: Build success"
 
           ### Set output for Zap scanner
