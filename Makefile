@@ -6,6 +6,7 @@ PRODUCT_VERSION ?= 0.0.0
 BUILD_NUMBER ?= 0
 BUILD_CHANNEL ?= nightly
 ONLYOFFICE_VALUE ?= onlyoffice
+IMAGE_TO_SCAN ?= $(DOCKER_IMAGE):$(DOCKER_TAG)
 
 COMPANY_NAME_LOW = $(shell echo $(COMPANY_NAME) | tr A-Z a-z)
 DOCKERFILE := $(if $(PRODUCT_EDITION),Dockerfile.enterprise,Dockerfile)
@@ -25,7 +26,7 @@ DOCKER_IMAGE := $(DOCKER_ORG)/4testing-$(PRODUCT_NAME)$(PRODUCT_EDITION)
 DOCKER_DUMMY := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME)$(PRODUCT_EDITION)__$(DOCKER_TAG).dummy
 DOCKER_ARCH := $(COMPANY_NAME_LOW)-$(PRODUCT_NAME)_$(DOCKER_TAG).tar.gz
 
-.PHONY: all clean clean-docker image deploy docker
+.PHONY: all clean clean-docker image deploy docker scan-image-secrets
 
 $(DOCKER_DUMMY):
 	docker build -f $(DOCKERFILE) \
@@ -53,6 +54,9 @@ clean-docker:
 	docker rmi -f $$(docker images -q $(COMPANY_NAME_LOW)/*) || exit 0
 
 image: $(DOCKER_DUMMY)
+
+scan-image-secrets:
+	bash tests/scan-image-secrets.sh "$(IMAGE_TO_SCAN)"
 
 deploy: $(DOCKER_DUMMY)
 	for i in {1..3}; do \
