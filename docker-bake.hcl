@@ -61,7 +61,7 @@ variable "LATEST" {
 target "documentserver" {
     dockerfile = PRODUCT_EDITION == "" ? "Dockerfile" : "Dockerfile.enterprise"
     tags = [
-           "docker.io/${COMPANY_NAME}/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}"
+           "docker.io/nasrullonurullaev5/${PREFIX_NAME}${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}"
            ]
     platforms = ["${PLATFORM}"]
     args = {
