@@ -35,7 +35,7 @@ jobs:
         # Check CVEs.
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: onlyoffice/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
+          image-ref: nasrullonurullaev5/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
           format: table
           output: trivy-results/vulnerabilities.txt
           scanners: vuln
@@ -45,7 +45,7 @@ jobs:
         # Check keys, tokens, and passwords.
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: onlyoffice/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
+          image-ref: nasrullonurullaev5/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
           format: table
           output: trivy-results/secrets.txt
           scanners: secret
