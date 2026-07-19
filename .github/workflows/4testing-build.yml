@@ -316,26 +316,26 @@ jobs:
               }
 
            if [[ "${AMD64_STATUS}" == "success" ]]; then
-              check_image "${COMPANY_NAME}/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}-amd64"
+              check_image "nasrullonurullaev5/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}-amd64"
            fi
 
            if [[ "${ARM64_STATUS}" == "success" ]]; then
-              check_image "${COMPANY_NAME}/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}-arm64"
+              check_image "nasrullonurullaev5/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}-arm64"
            fi
 
            PUSH_TAGS=(
-               -t "${COMPANY_NAME}/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}"
+               -t "nasrullonurullaev5/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:${TAG}"
            )
 
            if [[ "${BUILD_CHANNEL}" == "nightly" ]]; then
-              PUSH_TAGS+=( -t "${COMPANY_NAME}/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:latest" )
+              PUSH_TAGS+=( -t "nasrullonurullaev5/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}:latest" )
            fi
 
            docker buildx imagetools create "${PUSH_TAGS[@]}" "${FROM_TAGS[@]}"
 
            ### ==>> Cleanup platform-specific tags ###
 
-           REPO="${COMPANY_NAME}/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}"
+           REPO="nasrullonurullaev5/4testing-${PRODUCT_NAME}${PRODUCT_EDITION}"
 
            echo "Getting Docker Hub token..."
            TOKEN=$(curl -s -X POST "https://hub.docker.com/v2/users/login" \
