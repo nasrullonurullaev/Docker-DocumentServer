@@ -33,7 +33,7 @@ jobs:
 
       - name: Scan image vulnerabilities
         # Check CVEs.
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: nasrullonurullaev5/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
           format: table
@@ -43,7 +43,7 @@ jobs:
 
       - name: Scan image secrets
         # Check keys, tokens, and passwords.
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.36.0
         with:
           image-ref: nasrullonurullaev5/4testing-documentserver${{ env.EDITION_SUFFIX }}:${{ env.TAG }}
           format: table
